@@ -1,4 +1,4 @@
-# Blackjack GTO
+# Blackjack Chart
 
 Mathematically optimal blackjack basic-strategy charts for every common rule set, as a fast static site in 12 languages.
 
