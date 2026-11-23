@@ -98,3 +98,18 @@ footer { margin-top: 40px; padding-top: 18px; padding-bottom: 32px; border-top: 
 footer p { max-width: 80ch; margin: 0 0 8px; }
 @media (max-width: 380px) { th, td { font-size: .76rem; height: 28px; } tbody th, .corner { width: 2.9em; } }
 :lang(ko) { word-break: keep-all; overflow-wrap: anywhere; }
+.tap { margin: 14px 0 -8px; }
+.chart tbody td { cursor: pointer; transition: transform .08s; }
+.chart tbody td:hover { filter: brightness(1.08); }
+.chart tbody td:focus-visible { outline: 3px solid var(--link); outline-offset: -1px; }
+.chart tbody td:active { transform: scale(.92); }
+.pick { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--surface); border-top: 1px solid var(--line); box-shadow: 0 -6px 20px rgba(0,0,0,.14); padding: 10px 0 calc(10px + env(safe-area-inset-bottom)); }
+.pick[hidden] { display: none; }
+.pick .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.pick p { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; min-width: 0; }
+.pick span { font-weight: 600; }
+.pick strong { padding: 4px 10px; border-radius: 8px; color: var(--cell-text); }
+.pick button { flex: none; font: inherit; font-weight: 600; cursor: pointer; padding: 9px 16px; border-radius: 10px; border: 0; background: var(--brand); color: var(--bg); }
+.pick button:hover { filter: brightness(1.1); }
+body.has-pick { padding-bottom: 84px; }
+@media (prefers-reduced-motion: reduce) { .chart tbody td { transition: none; } }

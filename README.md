@@ -6,6 +6,7 @@ Mathematically optimal blackjack basic-strategy charts for every common rule set
 
 - **72 rule sets**: 1 / 2 / 4 / 6 / 8 / infinite decks × S17 / H17 × DAS / no DAS × late surrender / no surrender, plus European no-hole-card (ENHC) variants
 - **Three charts per rule set**: hard totals, soft totals, pairs (surrender included in the chart)
+- **Click any cell** to see the play in a result bar and **share a link** to that exact hand (`#h=10,6&d=10`)
 - **Quick hand lookup** and a **"what changes when the rules change"** comparison on every page
 - **12 languages**: English, 한국어, 日本語, 简体中文, 繁體中文, Español, Português, Français, Deutsch, Русский, Tiếng Việt, ไทย
 

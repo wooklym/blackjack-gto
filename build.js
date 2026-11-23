@@ -227,7 +227,7 @@ ${body}
 <p>${esc(t.disclaimer)}</p>
 <p><a href="${REPO}" rel="noopener">${esc(t.source)}</a></p>
 </footer>
-${data ? `<script id="data" type="application/json">${json(data)}</script><script src="/app.js" defer></script>` : ''}
+${data ? `<div id="pick" class="pick" hidden><div class="wrap"><p><span id="pickhand"></span><strong id="pickact" aria-live="polite"></strong></p><button id="share" type="button">${esc(t.share)}</button></div></div><script id="data" type="application/json">${json(data)}</script><script src="/app.js" defer></script>` : ''}
 </body>
 </html>
 `;
@@ -237,13 +237,14 @@ function chartBlocks(t, lang, r) {
   const chart = DATA[ruleId(r)];
   return (
     selector(t, lang, r) +
+    `<p class="note tap">${esc(t.tapHint)}</p>` +
     `<div class="charts">${table(t, chart, 'hard')}${table(t, chart, 'soft')}${table(t, chart, 'pairs')}</div>` +
     `<div class="two">${legend(t, chart)}${lookup(t)}</div>`
   );
 }
 
 function clientData(t, r) {
-  const labels = { bj: t.lookupBJ };
+  const labels = { bj: t.lookupBJ, hard: t.hardLbl, soft: t.softLbl, vs: t.vs, share: t.share, copied: t.copied };
   for (const c of CODES) labels[c] = t['l' + c];
   return { chart: DATA[ruleId(r)], labels };
 }
