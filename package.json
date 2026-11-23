@@ -1,0 +1,14 @@
+{
+  "name": "blackjack-gto",
+  "version": "1.0.0",
+  "description": "Mathematically optimal blackjack basic strategy charts for every rule set, in 12 languages.",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "compute": "node scripts/compute.js",
+    "build": "node build.js",
+    "test": "node scripts/verify.js",
+    "serve": "npx --yes serve dist"
+  },
+  "engines": { "node": ">=18" }
+}
