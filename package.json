@@ -1,5 +1,5 @@
 {
-  "name": "blackjack-chart",
+  "name": "blackjack-gto",
   "version": "1.0.0",
   "description": "Mathematically optimal blackjack basic strategy charts for every rule set, in 12 languages.",
   "license": "MIT",
