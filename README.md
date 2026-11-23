@@ -1,5 +1,7 @@
 # Blackjack Chart
 
+Live site: **https://blackjackchart.app**
+
 Mathematically optimal blackjack basic-strategy charts for every common rule set, as a fast static site in 12 languages.
 
 - **60 rule sets**: 1 / 2 / 4 / 6 / 8 decks × S17 / H17 × DAS / no DAS × late surrender / no surrender, plus European no-hole-card (ENHC) variants
@@ -33,7 +35,7 @@ npm test
 npm run build
 ```
 
-Generates the site into `dist/` (733 pages, sitemap, robots.txt). Set `SITE_URL` to the public origin so canonical and hreflang URLs are correct; on Vercel it is detected automatically.
+Generates the site into `dist/` (733 pages, sitemap, robots.txt). Canonical and hreflang URLs use `https://blackjackchart.app`; set `SITE_URL` to build for another origin.
 
 ## SEO
 

@@ -8,8 +8,8 @@ const ROOT = __dirname;
 const DIST = path.join(ROOT, 'dist');
 const SITE = (
   process.env.SITE_URL ||
-  (process.env.VERCEL_PROJECT_PRODUCTION_URL ? 'https://' + process.env.VERCEL_PROJECT_PRODUCTION_URL : '') ||
-  'https://blackjack-gto.vercel.app'
+  (process.env.VERCEL_ENV === "preview" && process.env.VERCEL_URL ? "https://" + process.env.VERCEL_URL : "") ||
+  'https://blackjackchart.app'
 ).replace(/\/$/, '');
 const REPO = 'https://github.com/wooklym/blackjack-gto';
 const TODAY = new Date().toISOString().slice(0, 10);
