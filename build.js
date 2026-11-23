@@ -213,6 +213,8 @@ ${ogAlt}
 <meta name="theme-color" content="#0f5132">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/styles.css">
+<script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)}</script>
+<script defer src="/_vercel/insights/script.js"></script>
 ${ld.map((o) => `<script type="application/ld+json">${json(o)}</script>`).join('\n')}
 </head>
 <body>
@@ -246,7 +248,7 @@ function chartBlocks(t, lang, r) {
 function clientData(t, r) {
   const labels = { bj: t.lookupBJ, hard: t.hardLbl, soft: t.softLbl, vs: t.vs, share: t.share, copied: t.copied };
   for (const c of CODES) labels[c] = t['l' + c];
-  return { chart: DATA[ruleId(r)], labels };
+  return { chart: DATA[ruleId(r)], labels, rule: ruleId(r) };
 }
 
 function write(rel, content) {

@@ -42,6 +42,10 @@ Generates the site into `dist/` (877 pages, sitemap, robots.txt). Canonical and 
 
 Each page has a localized title and description, a canonical URL, `hreflang` alternates for all languages plus `x-default`, Open Graph and Twitter tags, and JSON-LD (`WebSite`, `FAQPage`, `BreadcrumbList`, `Article`). `sitemap.xml` lists every URL with its language alternates.
 
+## Analytics
+
+Pages load Vercel Web Analytics (cookieless). Custom events: `chart_click` (first cell click per page view), `share`, `shared_link_open`.
+
 ## Adding a language
 
 1. Copy `src/i18n/en.json` to `src/i18n/<code>.json` and translate it.

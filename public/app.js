@@ -22,7 +22,14 @@
   var bar = document.getElementById('pick'), barHand = document.getElementById('pickhand'), barAct = document.getElementById('pickact');
   var shareBtn = document.getElementById('share');
   if (!c1) return;
-  var shareText = '';
+  var shareText = '', picked = false;
+
+  // Cookieless usage analytics (Vercel Web Analytics custom events).
+  function track(name, extra) {
+    var props = { rule: data.rule, lang: document.documentElement.lang, hand: c1.value + ',' + c2.value + ' vs ' + d.value };
+    for (var k in extra || {}) props[k] = extra[k];
+    try { window.va('event', { name: name, data: props }); } catch (e) {}
+  }
 
   function findRow(kind, key) {
     var rows = document.querySelectorAll('.chart[data-kind="' + kind + '"] tbody tr');
@@ -82,6 +89,7 @@
     var cards = cardsFor(sec.dataset.kind, row.dataset.k.split(' ')[0]);
     c1.value = cards[0]; c2.value = cards[1]; d.value = UP[cell.cellIndex - 1];
     update(true);
+    if (!picked) { picked = true; track('chart_click'); }
   }
   var cells = document.querySelectorAll('.chart tbody td');
   for (var i = 0; i < cells.length; i++) { cells[i].tabIndex = 0; cells[i].setAttribute('role', 'button'); }
@@ -107,6 +115,7 @@
   }
   shareBtn.addEventListener('click', function () {
     var url = location.href;
+    track('share', { method: navigator.share ? 'native' : 'copy' });
     if (navigator.share) { navigator.share({ title: document.title, text: shareText, url: url }).catch(function () {}); return; }
     var text = shareText + '\n' + url;
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(copied, function () { legacyCopy(text); });
@@ -118,5 +127,6 @@
   if (m && CARDS.indexOf(m[1]) > -1 && CARDS.indexOf(m[2]) > -1 && UP.indexOf(m[3]) > -1) {
     c1.value = m[1]; c2.value = m[2]; d.value = m[3];
     update(true, true);
+    track('shared_link_open');
   } else update(false);
 })();
