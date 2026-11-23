@@ -61,6 +61,16 @@ expectCell(D, 'hard', 11, 'A', 'Dh');
 expectCell(D, 'pairs', 7, '10', 'S');
 expectCell(D, 'soft', 18, 'A', 'S');
 
+// Infinite deck: matches 8 decks except two near-tie soft doubles that become hits.
+const F = "inf-deck-s17-das-ls-peek", G = "8-deck-s17-das-ls-peek";
+let infDiff = 0;
+for (const sec of ["hard", "soft", "pairs"]) for (const k in data[F][sec]) data[F][sec][k].forEach((c, i) => { if (c !== data[G][sec][k][i]) infDiff++; });
+if (infDiff !== 2) { failed++; console.error("FAIL infinite deck should differ from 8 decks in exactly 2 cells, got " + infDiff); }
+expectCell(F, "soft", 13, "5", "H");
+expectCell(F, "soft", 15, "4", "H");
+expectCell(F, "hard", 11, "A", "H");
+expectCell(F, "hard", 16, "9", "Rh");
+
 // European no hole card: do not risk extra money against a ten or ace.
 const E = '6-deck-s17-das-ns-enhc';
 expectCell(E, 'hard', 11, '10', 'H');

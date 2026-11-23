@@ -11,6 +11,7 @@
   "chartIntro": "Ce tableau indique le coup mathématiquement optimal pour chaque main de départ avec les règles ci-dessous. Repérez votre main dans la colonne de gauche et la carte visible du croupier sur la ligne du haut.",
   "d1": "1 jeu",
   "dN": "{n} jeux",
+  "dInf": "Jeu infini",
   "s17": "Le croupier reste sur 17 souple (S17)",
   "h17": "Le croupier tire sur 17 souple (H17)",
   "das": "Doubler après séparation autorisé (DAS)",

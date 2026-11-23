@@ -11,6 +11,7 @@
   "chartIntro": "Esta tabla muestra la jugada matemáticamente óptima para cada mano inicial con las reglas indicadas. Busca tu mano en la columna izquierda y la carta visible del crupier en la fila superior.",
   "d1": "1 baraja",
   "dN": "{n} barajas",
+  "dInf": "Baraja infinita",
   "s17": "El crupier se planta con 17 blando (S17)",
   "h17": "El crupier pide con 17 blando (H17)",
   "das": "Se permite doblar tras dividir (DAS)",

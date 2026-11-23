@@ -16,6 +16,7 @@ const KEY_MUL = [0];
 for (let c = 1; c <= 10; c++) KEY_MUL[c] = Math.pow(22, c - 1);
 
 function baseShoe(decks) {
+  if (decks === Infinity) decks = 1; // proportions only: nothing is ever removed
   const s = new Int32Array(11);
   for (let c = 1; c <= 9; c++) s[c] = 4 * decks;
   s[10] = 16 * decks;
@@ -30,10 +31,11 @@ class Ctx {
   constructor(decks, h17, up, extra) {
     this.h17 = h17;
     this.up = up;
+    this.st = decks === Infinity ? 0 : 1; // cards removed per draw (0 = infinite deck)
     this.shoe = baseShoe(decks);
-    this.shoe[up]--;
-    if (extra) this.shoe[extra]--;
-    this.n = 52 * decks - 1 - (extra ? 1 : 0);
+    this.shoe[up] -= this.st;
+    if (extra) this.shoe[extra] -= this.st;
+    this.n = this.shoe.reduce((a, b) => a + b, 0);
     this.bjCard = up === 1 ? 10 : up === 10 ? 1 : 0;
     this.dealerCache = new Map();
     this.memo = [new Map(), new Map()]; // [peek, enhc]
@@ -51,9 +53,9 @@ class Ctx {
     for (let h = 1; h <= 10; h++) {
       if (h === bj || shoe[h] === 0) continue;
       const p = shoe[h] / denom;
-      shoe[h]--; this.n--;
+      shoe[h] -= this.st; this.n -= this.st;
       this.dealerRec(up + h, up === 1 || h === 1, p);
-      shoe[h]++; this.n++;
+      shoe[h] += this.st; this.n += this.st;
     }
     this.dealerCache.set(key, d);
     return d;
@@ -68,9 +70,9 @@ class Ctx {
     for (let c = 1; c <= 10; c++) {
       const k = shoe[c];
       if (k === 0) continue;
-      shoe[c]--; this.n--;
+      shoe[c] -= this.st; this.n -= this.st;
       this.dealerRec(hard + c, ace || c === 1, p * k / n);
-      shoe[c]++; this.n++;
+      shoe[c] += this.st; this.n += this.st;
     }
   }
 
@@ -78,9 +80,9 @@ class Ctx {
   drawProb(c, enhc) {
     const shoe = this.shoe, bj = this.bjCard;
     if (!bj || enhc) return shoe[c] / this.n;
-    if (c === bj) return shoe[c] / (this.n - 1);
+    if (c === bj) return shoe[c] / (this.n - this.st);
     const nonBj = this.n - shoe[bj];
-    return shoe[c] * (1 - 1 / nonBj) / (this.n - 1);
+    return shoe[c] * (1 - this.st / nonBj) / (this.n - this.st);
   }
 
   standEV(hard, ace, key, enhc) {
@@ -112,9 +114,9 @@ class Ctx {
         if (shoe[c] === 0) continue;
         const p = this.drawProb(c, enhc);
         if (hard + c > 21) { h -= p; continue; }
-        shoe[c]--; this.n--;
+        shoe[c] -= this.st; this.n -= this.st;
         h += p * this.node(hard + c, ace || c === 1, key + KEY_MUL[c], enhc).b;
-        shoe[c]++; this.n++;
+        shoe[c] += this.st; this.n += this.st;
       }
     }
     r = { s, h, b: Math.max(s, h) };
@@ -129,30 +131,30 @@ class Ctx {
       if (shoe[c] === 0) continue;
       const p = this.drawProb(c, enhc);
       if (hard + c > 21) { ev -= 2 * p; continue; }
-      shoe[c]--; this.n--;
+      shoe[c] -= this.st; this.n -= this.st;
       ev += 2 * p * this.standEV(hard + c, ace || c === 1, key + KEY_MUL[c], enhc);
-      shoe[c]++; this.n++;
+      shoe[c] += this.st; this.n += this.st;
     }
     return ev;
   }
 
   /** Runs fn with cards a and b removed from the shoe. */
   withCards(a, b, fn) {
-    this.shoe[a]--; this.shoe[b]--; this.n -= 2;
+    this.shoe[a] -= this.st; this.shoe[b] -= this.st; this.n -= 2 * this.st;
     const r = fn(a + b, a === 1 || b === 1, KEY_MUL[a] + KEY_MUL[b]);
-    this.shoe[a]++; this.shoe[b]++; this.n += 2;
+    this.shoe[a] += this.st; this.shoe[b] += this.st; this.n += 2 * this.st;
     return r;
   }
 
   /** EV of one hand that started from a split card p (this ctx has the other p removed). */
   splitHandEV(p, das, enhc) {
     const shoe = this.shoe;
-    shoe[p]--; this.n--;
+    shoe[p] -= this.st; this.n -= this.st;
     let ev = 0;
     for (let c = 1; c <= 10; c++) {
       if (shoe[c] === 0) continue;
       const pr = this.drawProb(c, enhc);
-      shoe[c]--; this.n--;
+      shoe[c] -= this.st; this.n -= this.st;
       const hard = p + c, ace = p === 1 || c === 1, key = KEY_MUL[p] + KEY_MUL[c];
       let v;
       if (p === 1) v = this.standEV(hard, ace, key, enhc);
@@ -161,9 +163,9 @@ class Ctx {
         if (das) v = Math.max(v, this.doubleEV(hard, ace, key, enhc));
       }
       ev += pr * v;
-      shoe[c]++; this.n++;
+      shoe[c] += this.st; this.n += this.st;
     }
-    shoe[p]++; this.n++;
+    shoe[p] += this.st; this.n += this.st;
     return ev;
   }
 }
@@ -216,7 +218,7 @@ class Solver {
 
   chart(rules) {
     const hard = {}, soft = {}, pairs = {};
-    const weights = (up) => { const s = baseShoe(this.decks); s[up]--; return s; };
+    const weights = (up) => { const s = baseShoe(this.decks); if (this.decks !== Infinity) s[up]--; return s; };
     for (let t = 5; t <= 19; t++) {
       hard[t] = UPCARDS.map((up) => {
         const s = weights(up), comps = [];
@@ -237,7 +239,8 @@ class Solver {
   }
 }
 
-const DECKS = [1, 2, 4, 6, 8];
+const DECKS = [1, 2, 4, 6, 8, Infinity];
+const deckSlug = (n) => (n === Infinity ? "inf" : String(n));
 
 /** Every supported rule combination. */
 function allRules() {
@@ -253,7 +256,7 @@ function allRules() {
 
 function ruleId(r) {
   return [
-    r.decks + '-deck',
+    deckSlug(r.decks) + "-deck",
     r.h17 ? 'h17' : 's17',
     r.das ? 'das' : 'ndas',
     r.surrender ? 'ls' : 'ns',
@@ -261,4 +264,4 @@ function ruleId(r) {
   ].join('-');
 }
 
-module.exports = { Solver, allRules, ruleId, UPCARDS, DECKS };
+module.exports = { Solver, allRules, ruleId, deckSlug, UPCARDS, DECKS };

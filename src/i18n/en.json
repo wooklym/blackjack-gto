@@ -11,6 +11,7 @@
   "chartIntro": "This chart shows the mathematically optimal play for every starting hand under the rules below. Find your hand in the left column and the dealer's upcard along the top.",
   "d1": "Single Deck",
   "dN": "{n} Decks",
+  "dInf": "Infinite Deck",
   "s17": "Dealer stands on soft 17 (S17)",
   "h17": "Dealer hits soft 17 (H17)",
   "das": "Double after split allowed (DAS)",

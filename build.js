@@ -2,7 +2,7 @@
 // Static site generator: data/strategy.json + src/i18n/*.json -> dist/
 const fs = require('fs');
 const path = require('path');
-const { allRules, ruleId, DECKS } = require('./engine/strategy');
+const { allRules, ruleId, deckSlug, DECKS } = require('./engine/strategy');
 
 const ROOT = __dirname;
 const DIST = path.join(ROOT, 'dist');
@@ -47,7 +47,7 @@ function loadLang(code) {
   return t;
 }
 
-const decksLabel = (t, n) => (n === 1 ? t.d1 : fill(t.dN, { n }));
+const decksLabel = (t, n) => (n === Infinity ? t.dInf : n === 1 ? t.d1 : fill(t.dN, { n }));
 const longRules = (t, r) => [r.h17 ? t.h17 : t.s17, r.das ? t.das : t.ndas, r.surrender ? t.ls : t.ns, r.enhc ? t.enhc : t.peek];
 const shortRules = (t, r) =>
   [r.h17 ? 'H17' : 'S17', r.das ? t.tDas : t.tNdas, r.surrender ? t.tLs : t.tNs].concat(r.enhc ? [t.tEnhc] : []).join(', ');
@@ -99,7 +99,7 @@ function selector(t, lang, r) {
     '</select></label>';
   return (
     `<section class="rules"><h2>${esc(t.rulesTitle)}</h2><form id="rules" data-lang="${lang}">` +
-    sel('decks', t.lblDecks, DECKS.map((n) => [String(n), decksLabel(t, n)]), String(r.decks)) +
+    sel('decks', t.lblDecks, DECKS.map((n) => [deckSlug(n), decksLabel(t, n)]), deckSlug(r.decks)) +
     sel('s17', t.lblSoft17, [['s17', t.optS17], ['h17', t.optH17]], r.h17 ? 'h17' : 's17') +
     sel('das', t.lblDas, [['das', t.optYes], ['ndas', t.optNo]], r.das ? 'das' : 'ndas') +
     sel('hole', t.lblHole, [['peek', t.optPeek], ['enhc', t.optEnhc]], r.enhc ? 'enhc' : 'peek') +

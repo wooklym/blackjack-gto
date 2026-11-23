@@ -11,6 +11,7 @@
   "chartIntro": "Esta tabela mostra a jogada matematicamente ideal para cada mão inicial nas regras abaixo. Encontre a sua mão na coluna da esquerda e a carta aberta do dealer na linha superior.",
   "d1": "1 baralho",
   "dN": "{n} baralhos",
+  "dInf": "Baralho infinito",
   "s17": "Dealer para no 17 suave (S17)",
   "h17": "Dealer pede no 17 suave (H17)",
   "das": "Dobrar após dividir permitido (DAS)",

@@ -11,6 +11,7 @@
   "chartIntro": "Diese Tabelle zeigt den mathematisch optimalen Spielzug für jede Starthand unter den folgenden Regeln. Suche deine Hand in der linken Spalte und die offene Karte des Dealers in der obersten Zeile.",
   "d1": "1 Deck",
   "dN": "{n} Decks",
+  "dInf": "Unendliches Deck",
   "s17": "Dealer bleibt bei Soft 17 stehen (S17)",
   "h17": "Dealer zieht bei Soft 17 (H17)",
   "das": "Verdoppeln nach Teilen erlaubt (DAS)",
