@@ -1,5 +1,5 @@
 'use strict';
-// Submits every URL to IndexNow (Bing, Naver, Yandex, Seznam) after a production build.
+// Submits every URL to IndexNow (api.indexnow.org) after a production build.
 // Runs only when the commit message contains "[indexnow]"; never fails the build.
 const fs = require('fs');
 const path = require('path');
@@ -11,7 +11,7 @@ const HOST = 'blackjackchart.app';
   const msg = process.env.VERCEL_GIT_COMMIT_MESSAGE || '';
   if (process.env.VERCEL_ENV !== 'production' || !msg.includes('[indexnow]')) return console.log('indexnow: skipped');
   const urlList = fs.readFileSync(path.join(__dirname, '..', 'dist', 'urls.txt'), 'utf8').split('\n').filter((u) => u.startsWith(`https://${HOST}/`));
-  for (const endpoint of ['https://api.indexnow.org/indexnow', 'https://searchadvisor.naver.com/indexnow']) {
+  for (const endpoint of ['https://api.indexnow.org/indexnow']) {
     try {
       const res = await fetch(endpoint, {
         method: 'POST',
