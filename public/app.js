@@ -70,7 +70,8 @@
     var code = data.chart[h.kind][h.key][col];
     out.textContent = L[code]; out.className = 'c-' + code;
     var hand = h.label + ' ' + L.vs + ' ' + d.value;
-    barHand.textContent = hand; barAct.textContent = L[code]; barAct.className = 'c-' + code;
+    barHand.textContent = hand;
+    barHand.href = '/' + document.documentElement.dataset.lang + '/hand/' + (h.kind === 'pairs' ? 'pair' : h.kind) + '-' + h.key.toLowerCase() + '-vs-' + d.value.toLowerCase() + '/'; barAct.textContent = L[code]; barAct.className = 'c-' + code;
     shareText = hand + ' → ' + L[code];
     var row = findRow(h.kind, h.key), cell = row && row.children[col + 1];
     if (cell) cell.classList.add('on');

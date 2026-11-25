@@ -8,6 +8,7 @@ Mathematically optimal blackjack basic-strategy charts for every common rule set
 - **Three charts per rule set**: hard totals, soft totals, pairs (surrender included in the chart)
 - **Click any cell** to see the play in a result bar and **share a link** to that exact hand (`#h=10,6&d=10`)
 - **Quick hand lookup** and a **"what changes when the rules change"** comparison on every page
+- **Hand guide**: a page for every hand vs dealer upcard (330 per language) showing the best play under all 72 rule sets
 - **12 languages**: English, 한국어, 日本語, 简体中文, 繁體中文, Español, Português, Français, Deutsch, Русский, Tiếng Việt, ไทย
 
 ## How the charts are computed
@@ -36,7 +37,7 @@ npm test
 npm run build
 ```
 
-Generates the site into `dist/` (877 pages, sitemap, robots.txt). Canonical and hreflang URLs use `https://blackjackchart.app`; set `SITE_URL` to build for another origin.
+Generates the site into `dist/` (4,849 pages, sitemap index, robots.txt). Canonical and hreflang URLs use `https://blackjackchart.app`; set `SITE_URL` to build for another origin.
 
 ## SEO
 

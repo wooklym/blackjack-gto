@@ -113,3 +113,18 @@ footer p { max-width: 80ch; margin: 0 0 8px; }
 .pick button:hover { filter: brightness(1.1); }
 body.has-pick { padding-bottom: 84px; }
 @media (prefers-reduced-motion: reduce) { .chart tbody td { transition: none; } }
+td a { display: block; color: inherit; text-decoration: none; line-height: 30px; }
+.matrix { table-layout: auto; }
+.matrix tbody th { text-align: left; width: auto; white-space: normal; padding: 0 8px 0 0; font-size: .82rem; }
+.matrix thead th { font-size: .78rem; padding: 0 2px; }
+.answer { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+.answer p { margin: 0 0 8px; } .answer p:last-child { margin: 0; }
+.answer strong { display: inline-block; padding: 6px 14px; border-radius: 8px; color: var(--cell-text); font-size: 1.15rem; }
+.more ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 8px; font-size: .88rem; }
+.more li a { display: block; padding: 3px 10px; border: 1px solid var(--line); border-radius: 999px; text-decoration: none; background: var(--surface); }
+.guide p { margin: 0; }
+.pick a { color: inherit; }
+.matrix { table-layout: fixed; }
+.matrix .corner, .matrix tbody th { width: 42%; text-align: left; }
+.matrix thead th { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (min-width: 700px) { .matrix .corner, .matrix tbody th { width: 30%; } }

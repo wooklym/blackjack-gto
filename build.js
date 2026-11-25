@@ -188,7 +188,7 @@ function page({ lang, t, title, desc, pathname, alternates, body, ld, data }) {
     return `<li><a href="${a.path}" hreflang="${l.hreflang}" lang="${l.hreflang}"${l.code === lang ? ' aria-current="true"' : ''}>${l.name}</a></li>`;
   }).join('');
   return `<!doctype html>
-<html lang="${L.hreflang}">
+<html lang="${L.hreflang}" data-lang="${lang}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -229,7 +229,7 @@ ${body}
 <p>${esc(t.disclaimer)}</p>
 <p><a href="${REPO}" rel="noopener">${esc(t.source)}</a></p>
 </footer>
-${data ? `<div id="pick" class="pick" hidden><div class="wrap"><p><span id="pickhand"></span><strong id="pickact" aria-live="polite"></strong></p><button id="share" type="button">${esc(t.share)}</button></div></div><script id="data" type="application/json">${json(data)}</script><script src="/app.js" defer></script>` : ''}
+${data ? `<div id="pick" class="pick" hidden><div class="wrap"><p><a id="pickhand"></a><strong id="pickact" aria-live="polite"></strong></p><button id="share" type="button">${esc(t.share)}</button></div></div><script id="data" type="application/json">${json(data)}</script><script src="/app.js" defer></script>` : ''}
 </body>
 </html>
 `;
@@ -249,6 +249,109 @@ function clientData(t, r) {
   const labels = { bj: t.lookupBJ, hard: t.hardLbl, soft: t.softLbl, vs: t.vs, share: t.share, copied: t.copied };
   for (const c of CODES) labels[c] = t['l' + c];
   return { chart: DATA[ruleId(r)], labels, rule: ruleId(r) };
+  // (hand guide links are built client-side from the page language)
+}
+
+// ---- Hand guide: one page per (hand, dealer upcard), covering every rule set ----
+const UP_SLUGS = UP_LABELS.map((u) => u.toLowerCase());
+const HANDS = []; // { kind, key, slug }
+for (let t = 5; t <= 19; t++) HANDS.push({ kind: 'hard', key: String(t), slug: 'hard-' + t });
+for (let t = 13; t <= 20; t++) HANDS.push({ kind: 'soft', key: String(t), slug: 'soft-' + t });
+for (const c of ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'A']) HANDS.push({ kind: 'pairs', key: c, slug: 'pair-' + c.toLowerCase() });
+const handLabel = (t, h) =>
+  h.kind === 'hard' ? fill(t.hardLbl, { n: h.key }) : h.kind === 'soft' ? `${fill(t.softLbl, { n: h.key })} (A,${h.key - 11})` : fill(t.pairLbl, { c: h.key });
+const handCards = (h) => {
+  if (h.kind === 'pairs') return [h.key, h.key];
+  if (h.kind === 'soft') return ['A', String(h.key - 11)];
+  const a = Math.max(2, h.key - 10);
+  return [String(h.key - a), String(a)];
+};
+const handUrl = (lang, h, i) => `/${lang}/hand/${h.slug}-vs-${UP_SLUGS[i]}/`;
+const altPaths = (fn) => LANGS.map((l) => ({ hreflang: l.hreflang, path: fn(l.code) })).concat([{ hreflang: 'x-default', path: fn('en') }]);
+
+function handsIndex(t, lang) {
+  const chart = DATA[ruleId(DEFAULT_RULE)];
+  const head = UP_LABELS.map((u) => `<th scope="col">${u}</th>`).join('');
+  return ['hard', 'soft', 'pairs']
+    .map((kind) => {
+      const body = HANDS.filter((h) => h.kind === kind)
+        .map((h) => {
+          const label = kind === 'hard' ? h.key : kind === 'soft' ? 'A,' + (h.key - 11) : `${h.key},${h.key}`;
+          return `<tr><th scope="row">${label}</th>` + chart[kind][h.key].map((c, i) => `<td class="c-${c}"><a href="${handUrl(lang, h, i)}" title="${esc(handLabel(t, h))} ${esc(t.vs)} ${UP_LABELS[i]}">${SHOW[c]}</a></td>`).join('') + '</tr>';
+        })
+        .join('');
+      return `<section class="chart links"><h2>${esc(t[kind])}</h2><table><caption>${esc(t.yourHand)} × ${esc(t.dealerUp)}</caption><thead><tr><th scope="col" class="corner"></th>${head}</tr></thead><tbody>${body}</tbody></table></section>`;
+    })
+    .join('');
+}
+
+function buildHands(L, t, urls) {
+  const lang = L.code;
+  const indexPath = `/${lang}/hand/`;
+  const variants = RULES.filter((r) => r.decks === DECKS[0]);
+  write(
+    `${lang}/hand/index.html`,
+    page({
+      lang, t, title: `${t.handsTitle} – ${t.siteName}`, desc: t.homeDesc, pathname: indexPath, alternates: altPaths((l) => `/${l}/hand/`),
+      body: `<nav class="crumbs" aria-label="breadcrumb"><a href="${url(lang)}">${esc(t.home)}</a> › <span>${esc(t.handGuide)}</span></nav><h1>${esc(t.handsTitle)}</h1><p class="note">${esc(t.defaultNote)}</p><div class="charts">${handsIndex(t, lang)}</div>`,
+      ld: [{ '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+        { '@type': 'ListItem', position: 1, name: t.siteName, item: SITE + url(lang) },
+        { '@type': 'ListItem', position: 2, name: t.handsTitle, item: SITE + indexPath },
+      ] }],
+    })
+  );
+  urls.push({ path: indexPath, alternates: altPaths((l) => `/${l}/hand/`), priority: '0.8' });
+
+  for (const h of HANDS) {
+    const hand = handLabel(t, h);
+    const cards = handCards(h);
+    UP_LABELS.forEach((up, i) => {
+      const vars = { hand, up, n: RULES.length };
+      const code = (r) => DATA[ruleId(r)][h.kind][h.key][i];
+      const def = code(DEFAULT_RULE);
+      const counts = {};
+      for (const r of RULES) counts[code(r)] = (counts[code(r)] || 0) + 1;
+      const order = CODES.filter((c) => counts[c]).sort((a, b) => counts[b] - counts[a]);
+      const title = fill(t.handTitle, vars), desc = fill(t.handDesc, vars), h1 = fill(t.handH1, vars), q = fill(t.handQ, vars);
+      const pathname = handUrl(lang, h, i);
+      const hash = `#h=${cards[0]},${cards[1]}&d=${up}`;
+      const matrix =
+        `<table class="matrix"><thead><tr><th scope="col" class="corner">${esc(t.lblDecks)} →</th>${DECKS.map((n) => `<th scope="col" title="${esc(decksLabel(t, n))}">${n === Infinity ? '∞' : n}</th>`).join('')}</tr></thead><tbody>` +
+        variants
+          .map(
+            (v) =>
+              `<tr><th scope="row">${esc(shortRules(t, v))}</th>` +
+              DECKS.map((n) => { const r = { ...v, decks: n }, c = code(r); return `<td class="c-${c}"><a href="${url(lang, r)}${hash}" title="${esc(t['l' + c])}">${SHOW[c]}</a></td>`; }).join('') +
+              '</tr>'
+          )
+          .join('') +
+        '</tbody></table>';
+      const answer = `${t.handLead} ${t['l' + def]}. ${fill(t.handCount, vars)}: ${order.map((c) => `${t['l' + c]} (${counts[c]}/${RULES.length})`).join('; ')}.`;
+      const body =
+        `<nav class="crumbs" aria-label="breadcrumb"><a href="${url(lang)}">${esc(t.home)}</a> › <a href="${indexPath}">${esc(t.handGuide)}</a> › <span>${esc(h1)}</span></nav>` +
+        `<h1>${esc(h1)}</h1><p class="lead">${esc(q)}</p>` +
+        `<section class="answer"><p>${esc(t.handLead)}</p><p><strong class="c-${def}">${esc(t['l' + def])}</strong></p></section>` +
+        `<section class="legend"><h2>${esc(fill(t.handCount, vars))}</h2><ul>${order.map((c) => `<li><span class="key c-${c}">${SHOW[c]}</span> ${esc(t['l' + c])} — ${counts[c]}/${RULES.length}</li>`).join('')}</ul></section>` +
+        `<section><h2>${esc(t.handMatrix)}</h2>${matrix}</section>` +
+        `<section class="more"><h2>${esc(t.handOtherUp)}</h2><ul>${UP_LABELS.map((u, j) => (j === i ? '' : `<li><a href="${handUrl(lang, h, j)}">${esc(hand)} ${esc(t.vs)} ${u}</a></li>`)).join('')}</ul></section>` +
+        `<section class="more"><h2>${esc(fill(t.handOther, vars))}</h2><ul>${HANDS.map((o) => (o === h ? '' : `<li><a href="${handUrl(lang, o, i)}">${esc(handLabel(t, o))}</a></li>`)).join('')}</ul></section>`;
+      write(
+        `${lang}/hand/${h.slug}-vs-${UP_SLUGS[i]}/index.html`,
+        page({
+          lang, t, title, desc, pathname, alternates: altPaths((l) => handUrl(l, h, i)), body,
+          ld: [
+            { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+              { '@type': 'ListItem', position: 1, name: t.siteName, item: SITE + url(lang) },
+              { '@type': 'ListItem', position: 2, name: t.handsTitle, item: SITE + indexPath },
+              { '@type': 'ListItem', position: 3, name: h1, item: SITE + pathname },
+            ] },
+            { '@context': 'https://schema.org', '@type': 'FAQPage', inLanguage: L.hreflang, mainEntity: [{ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: answer } }] },
+          ],
+        })
+      );
+      urls.push({ path: pathname, alternates: altPaths((l) => handUrl(l, h, i)), priority: '0.5' });
+    });
+  }
 }
 
 function write(rel, content) {
@@ -271,6 +374,8 @@ function build() {
     const t = loadLang(lang);
     const how = `<section class="prose"><h2>${esc(t.howTitle)}</h2><p>${esc(t.howBody)}</p></section>`;
 
+    const guideLink = `<section class="guide"><h2>${esc(t.handGuide)}</h2><p><a href="/${lang}/hand/">${esc(t.handsTitle)} →</a></p></section>`;
+
     // Home
     const faq = [1, 2, 3, 4].map((i) => [t['q' + i], t['a' + i]]);
     const homeBody =
@@ -278,6 +383,7 @@ function build() {
       chartBlocks(t, lang, DEFAULT_RULE) +
       how +
       diffSection(t, lang, DEFAULT_RULE) +
+      guideLink +
       `<section class="prose faq"><h2>${esc(t.faqTitle)}</h2>${faq.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('')}</section>` +
       allCharts(t, lang, null);
     write(
@@ -307,6 +413,7 @@ function build() {
         chartBlocks(t, lang, r) +
         how +
         diffSection(t, lang, r) +
+        guideLink +
         allCharts(t, lang, id);
       write(
         `${lang}/${id}/index.html`,
@@ -325,6 +432,7 @@ function build() {
       );
       urls.push({ path: url(lang, r), alternates: altFor(r), priority: id === ruleId(DEFAULT_RULE) ? '0.9' : '0.7' });
     }
+    buildHands(L, t, urls);
   }
 
   // Root: language chooser (x-default) with a client-side language redirect.
@@ -348,18 +456,30 @@ function build() {
       .replace(/<link rel="canonical"[^>]*>/, '<meta name="robots" content="noindex">')
   );
 
-  const sitemap =
-    '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n' +
-    urls
-      .map(
-        (u) =>
-          `<url><loc>${SITE}${u.path}</loc><lastmod>${TODAY}</lastmod><priority>${u.priority}</priority>` +
-          u.alternates.map((a) => `<xhtml:link rel="alternate" hreflang="${a.hreflang}" href="${SITE}${a.path}"/>`).join('') +
-          '</url>'
-      )
-      .join('\n') +
-    '\n</urlset>\n';
-  write('sitemap.xml', sitemap);
+  const groups = {};
+  for (const u of urls) (groups[u.path.split('/')[1] || 'root'] = groups[u.path.split('/')[1] || 'root'] || []).push(u);
+  for (const [name, list] of Object.entries(groups)) {
+    write(
+      `sitemaps/${name}.xml`,
+      '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n' +
+        list
+          .map(
+            (u) =>
+              `<url><loc>${SITE}${u.path}</loc><lastmod>${TODAY}</lastmod><priority>${u.priority}</priority>` +
+              u.alternates.map((x) => `<xhtml:link rel="alternate" hreflang="${x.hreflang}" href="${SITE}${x.path}"/>`).join('') +
+              '</url>'
+          )
+          .join('\n') +
+        '\n</urlset>\n'
+    );
+  }
+  write(
+    'sitemap.xml',
+    '<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+      Object.keys(groups).map((name) => `<sitemap><loc>${SITE}/sitemaps/${name}.xml</loc><lastmod>${TODAY}</lastmod></sitemap>`).join('\n') +
+      '\n</sitemapindex>\n'
+  );
+  fs.writeFileSync(path.join(DIST, 'urls.txt'), urls.map((u) => SITE + u.path).join('\n') + '\n');
   write('robots.txt', `User-agent: *\nAllow: /\n\nSitemap: ${SITE}/sitemap.xml\n`);
   console.log(`built ${urls.length} pages for ${SITE}`);
 }
