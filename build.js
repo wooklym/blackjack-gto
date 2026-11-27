@@ -31,7 +31,7 @@ const LANGS = [
 
 const DATA = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'strategy.json'), 'utf8'));
 const RULES = allRules();
-const DEFAULT_RULE = { decks: 6, h17: true, das: true, surrender: true, enhc: false };
+const DEFAULT_RULE = { decks: Infinity, h17: false, das: true, surrender: true, enhc: false };
 const EN = JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'i18n', 'en.json'), 'utf8'));
 const UP_LABELS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'A'];
 const CODES = ['H', 'S', 'Dh', 'Ds', 'P', 'Rh', 'Rs', 'Rp'];
